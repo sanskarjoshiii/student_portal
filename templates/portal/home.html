@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}EventHub — Campus Events{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="kicker" style="margin-bottom:24px">Campus events · one place</p>
+    <h1>Show up for what matters.</h1>
+    <p style="margin-top:24px">Seminars, workshops and competitions across every department. Browse, filter and register in one click.</p>
+    <div class="flex gap wrap mt-6">
+      <a href="#events" class="btn btn-primary">Browse events</a>
+      {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn btn-secondary">Create account</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card board">
+    <div class="board-head">
+      <div class="flex items-center gap" style="gap:8px">
+        <span style="width:10px;height:10px;border-radius:999px;background:var(--accent)"></span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">eventhub://live</span>
+      </div>
+      <span class="mono" style="font-size:10px;letter-spacing:.2em;color:var(--accent-dark)">LIVE</span>
+    </div>
+    <div class="board-row"><span class="mono muted" style="font-size:12px">01</span><span class="mono" style="font-size:14px">browse every event</span></div>
+    <div class="board-row"><span class="mono muted" style="font-size:12px">02</span><span class="mono" style="font-size:14px">filter by category &amp; dept</span></div>
+    <div class="board-row"><span class="mono muted" style="font-size:12px">03</span><span class="mono" style="font-size:14px">register in one click</span></div>
+    <div class="board-row"><span class="mono muted" style="font-size:12px">04</span><span class="mono" style="font-size:14px">track your registrations</span></div>
+    <div class="dot-grid"></div>
+  </div>
+</section>
+
+<section id="events">
+  <p class="kicker" style="margin-bottom:8px">The listing</p>
+  <h2 style="margin-bottom:20px">All events</h2>
+
+  <!-- Filters -->
+  <form method="get" class="card pad mb-6" style="margin-bottom:24px">
+    <div class="form-grid" style="grid-template-columns:2fr 1fr 1fr 1fr;align-items:end">
+      <div>
+        <label class="field">Search</label>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search events…">
+      </div>
+      <div>
+        <label class="field">Category</label>
+        <select name="category">
+          <option value="All">All categories</option>
+          {% for c in categories %}<option value="{{ c }}" {% if c == category %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="field">Department</label>
+        <select name="department">
+          {% for d in departments %}<option value="{{ d }}" {% if d == department %}selected{% endif %}>{% if d == 'All' %}All departments{% else %}{{ d }}{% endif %}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="field">When</label>
+        <select name="when">
+          <option value="">All dates</option>
+          <option value="upcoming" {% if when == 'upcoming' %}selected{% endif %}>Upcoming</option>
+          <option value="past" {% if when == 'past' %}selected{% endif %}>Past</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex between items-center" style="margin-top:16px">
+      <div style="max-width:200px;width:100%">
+        <select name="sort">
+          <option value="date-asc" {% if sort == 'date-asc' %}selected{% endif %}>Date: soonest first</option>
+          <option value="date-desc" {% if sort == 'date-desc' %}selected{% endif %}>Date: latest first</option>
+          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most popular</option>
+        </select>
+      </div>
+      <div class="flex gap">
+        {% if has_filters %}<a href="{% url 'home' %}" class="btn btn-secondary btn-sm">Clear</a>{% endif %}
+        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      </div>
+    </div>
+  </form>
+
+  {% if events %}
+    <p class="kicker" style="margin-bottom:20px">{{ count }} event{{ count|pluralize }}</p>
+    <div class="grid">
+      {% for event in events %}
+        <a href="{% url 'event_detail' event.pk %}" class="card event-card">
+          <span class="accent-line" style="background:{{ event.banner_color }}"></span>
+          <div class="flex between items-center" style="margin-bottom:16px">
+            {% include 'portal/_cat.html' with category=event.category %}
+            <span class="mono" style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted)">{% if event.is_past %}past{% else %}upcoming{% endif %}</span>
+          </div>
+          <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin:0">{{ event.title }}</h3>
+          <div class="muted" style="font-size:14px;margin-top:16px;flex:1">
+            <div style="margin-bottom:6px">📅 {{ event.date|date:"D, M j, Y" }}</div>
+            <div>📍 {{ event.venue }}</div>
+          </div>
+          <div class="flex between" style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
+            <span class="mono" style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted)">{{ event.department }}</span>
+            {% if event.spots_left is not None %}
+              <span class="mono" style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(27,24,21,.7)">{% if event.spots_left > 0 %}{{ event.spots_left }} left{% else %}full{% endif %}</span>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty">
+      <div style="font-size:40px">🔍</div>
+      <h3 style="margin:0">No events found</h3>
+      <p class="muted" style="margin:0;max-width:340px">{% if has_filters %}Try adjusting your search or filters.{% else %}New events are added regularly — check back soon.{% endif %}</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

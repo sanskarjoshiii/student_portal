@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Admin approval — EventHub{% endblock %}
+{% block content %}
+<div class="center-narrow">
+  {% if error %}
+    <div class="card pad" style="padding:40px;text-align:center">
+      <div style="font-size:44px">⚠️</div>
+      <h1 style="font-size:24px;margin-top:12px">Link problem</h1>
+      <p class="muted" style="margin-top:8px">{{ error }}</p>
+      <a href="{% url 'home' %}" class="btn btn-secondary mt-6">Go to EventHub</a>
+    </div>
+  {% elif result %}
+    <div class="card pad" style="padding:40px;text-align:center">
+      <div style="font-size:44px">{% if result == 'approved' %}✅{% else %}❌{% endif %}</div>
+      <h1 style="font-size:24px;margin-top:12px">Request {{ result }}</h1>
+      <p class="muted" style="margin-top:8px">
+        {% if already %}This request was already decided. {% endif %}
+        {% if result == 'approved' %}A temporary password has been emailed to {{ user_obj.email }}. They can now log in.{% else %}{{ user_obj.email }} has been notified. No admin access was granted.{% endif %}
+      </p>
+      <a href="{% url 'home' %}" class="btn btn-secondary mt-6">Go to EventHub</a>
+    </div>
+  {% else %}
+    <div class="card pad" style="padding:32px">
+      <div class="flex items-center gap" style="gap:8px;color:var(--accent-dark)">
+        <span style="font-size:22px">🛡️</span>
+        <h1 style="font-size:22px;color:var(--ink)">Admin access request</h1>
+      </div>
+      <p class="muted" style="font-size:14px;margin:8px 0 20px">As the system head, you can approve or reject this request.</p>
+
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;font-size:14px;margin-bottom:20px">
+        <div class="flex between" style="padding:2px 0"><span class="muted">Name</span><span style="font-weight:600">{{ user_obj.name }}</span></div>
+        <div class="flex between" style="padding:2px 0"><span class="muted">Email</span><span style="font-weight:600">{{ user_obj.email }}</span></div>
+        <div class="flex between" style="padding:2px 0"><span class="muted">Requested</span><span>{{ user_obj.requested_at|date:"M j, Y" }}</span></div>
+      </div>
+
+      <form method="post" class="flex gap">
+        {% csrf_token %}
+        <input type="hidden" name="token" value="{{ token }}">
+        <button type="submit" name="action" value="approve" class="btn btn-primary" style="flex:1">Approve</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger" style="flex:1">Reject</button>
+      </form>
+      <p class="muted" style="text-align:center;font-size:12px;margin-top:16px">On approval, a temporary password is generated and emailed to the requester automatically.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

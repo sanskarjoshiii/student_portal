@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Log in — EventHub{% endblock %}
+{% block content %}
+<div class="center-narrow">
+  <div class="card pad" style="padding:32px">
+    <p class="kicker" style="margin-bottom:12px">Welcome back</p>
+    <h1 style="font-size:28px">Log in</h1>
+    <p class="muted" style="font-size:14px;margin:4px 0 24px">Sign in to register for events.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label class="field">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="form-row">
+        <label class="field">Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Log in</button>
+    </form>
+
+    <p class="muted" style="text-align:center;font-size:14px;margin-top:24px">
+      No account? <a href="{% url 'register' %}" style="color:var(--accent-dark);font-weight:500">Sign up</a>
+    </p>
+    <p class="muted" style="text-align:center;font-size:12px;background:var(--surface2);border-radius:10px;padding:8px;margin-top:12px">
+      Demo admin: admin@eventhub.test / Admin@123
+    </p>
+  </div>
+</div>
+{% endblock %}

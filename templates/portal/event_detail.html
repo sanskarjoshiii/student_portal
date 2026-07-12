@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} — EventHub{% endblock %}
+
+{% block content %}
+<div style="max-width:840px;margin:0 auto">
+  <a href="{% url 'home' %}" class="muted" style="font-size:14px">← Back to events</a>
+
+  <div class="flex items-center gap wrap" style="margin:20px 0 12px">
+    {% include 'portal/_cat.html' with category=event.category %}
+    <span class="mono" style="font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted)">{% if event.is_past %}past event{% else %}upcoming{% endif %}</span>
+  </div>
+  <h1 style="font-size:44px">{{ event.title }}</h1>
+
+  <div class="flex" style="gap:32px;margin-top:40px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px">
+      <div class="meta-grid">
+        <div class="meta"><span class="ico">📅</span><div><p class="kicker">When</p><p style="margin:2px 0 0;font-weight:500">{{ event.date|date:"D, M j, Y · g:i A" }}</p></div></div>
+        <div class="meta"><span class="ico">📍</span><div><p class="kicker">Where</p><p style="margin:2px 0 0;font-weight:500">{{ event.venue }}</p></div></div>
+        <div class="meta"><span class="ico">🏛️</span><div><p class="kicker">Department</p><p style="margin:2px 0 0;font-weight:500">{{ event.department }}</p></div></div>
+        {% if event.organizer %}<div class="meta"><span class="ico">👤</span><div><p class="kicker">Organizer</p><p style="margin:2px 0 0;font-weight:500">{{ event.organizer }}</p></div></div>{% endif %}
+      </div>
+
+      <div style="border-top:1px solid var(--line);padding-top:24px;margin-top:32px">
+        <p class="kicker" style="margin-bottom:12px">About this event</p>
+        <p style="font-size:18px;line-height:1.7;white-space:pre-line">{{ event.description }}</p>
+      </div>
+    </div>
+
+    <div style="width:280px">
+      <div class="card pad">
+        <div style="height:6px;width:48px;border-radius:999px;background:{{ event.banner_color }};margin-bottom:16px"></div>
+        {% if event.spots_left is not None %}
+          <p class="mono" style="font-size:30px;font-weight:700;margin:0">{{ event.spots_left }}</p>
+          <p class="kicker" style="margin-top:4px">of {{ event.capacity }} spots left</p>
+        {% else %}
+          <p class="mono" style="font-size:30px;font-weight:700;margin:0">{{ event.registered_count }}</p>
+          <p class="kicker" style="margin-top:4px">registered</p>
+        {% endif %}
+
+        <div style="margin-top:16px">
+        {% if event.is_past %}
+          <div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center;font-size:14px;color:var(--muted)">This event has ended</div>
+        {% elif not user.is_authenticated %}
+          <a href="{% url 'login' %}?next={% url 'event_detail' event.pk %}" class="btn btn-primary" style="width:100%">Log in to register</a>
+        {% elif my_registration %}
+          <div style="background:#ecfdf5;color:#047857;border-radius:12px;padding:10px;text-align:center;font-size:14px;font-weight:600;margin-bottom:8px">✓ You are registered</div>
+          <form method="post" action="{% url 'cancel_registration' my_registration.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'event_detail' event.pk %}">
+            <button type="submit" class="btn btn-secondary" style="width:100%">Cancel registration</button>
+          </form>
+        {% elif event.is_full %}
+          <button class="btn btn-primary" style="width:100%" disabled>Event full</button>
+        {% else %}
+          <form method="post" action="{% url 'register_event' event.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="width:100%">Register</button>
+          </form>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

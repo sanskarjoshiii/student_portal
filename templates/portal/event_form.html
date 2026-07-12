@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{% if mode == 'edit' %}Edit{% else %}New{% endif %} Event — EventHub{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto">
+  <a href="{% url 'admin_dashboard' %}" class="muted" style="font-size:14px">← Back to dashboard</a>
+  <h1 style="margin:16px 0 24px">{% if mode == 'edit' %}Edit Event{% else %}New Event{% endif %}</h1>
+
+  <div class="card pad">
+    {% if form.non_field_errors %}<ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label class="field">Title</label>{{ form.title }}
+        {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-row">
+        <label class="field">Description</label>{{ form.description }}
+        {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label class="field">Category</label>{{ form.category }}</div>
+        <div class="form-row"><label class="field">Department</label>{{ form.department }}</div>
+        <div class="form-row"><label class="field">Venue</label>{{ form.venue }}
+          {% if form.venue.errors %}<ul class="errorlist">{% for e in form.venue.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-row"><label class="field">Date &amp; time</label>{{ form.date }}
+          {% if form.date.errors %}<ul class="errorlist">{% for e in form.date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-row"><label class="field">Capacity (optional)</label>{{ form.capacity }}</div>
+        <div class="form-row"><label class="field">Organizer (optional)</label>{{ form.organizer }}</div>
+      </div>
+      <div class="form-row">
+        <label class="field">Accent color</label>
+        <div style="display:flex;align-items:center;gap:10px">{{ form.banner_color }}</div>
+      </div>
+      <div class="flex gap mt-4">
+        <button type="submit" class="btn btn-primary">{% if mode == 'edit' %}Save changes{% else %}Create event{% endif %}</button>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

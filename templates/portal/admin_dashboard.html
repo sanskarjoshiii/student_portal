@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — EventHub{% endblock %}
+{% block content %}
+<div class="flex between items-center wrap" style="gap:16px;margin-bottom:32px">
+  <div>
+    <p class="kicker" style="margin-bottom:12px">Control room</p>
+    <h1>Admin Dashboard</h1>
+    <p class="muted" style="margin-top:8px">Welcome, {{ user.name }}. Schedule and manage campus events.</p>
+  </div>
+  <a href="{% url 'event_create' %}" class="btn btn-primary">+ New Event</a>
+</div>
+
+<div class="stats">
+  <div class="card stat"><span style="font-size:24px">📅</span><div><div class="num">{{ my_events_count }}</div><div class="muted" style="font-size:14px">My events</div></div></div>
+  <div class="card stat"><span style="font-size:24px">👥</span><div><div class="num">{{ my_reg_total }}</div><div class="muted" style="font-size:14px">Registrations (my events)</div></div></div>
+</div>
+
+<div class="tabs">
+  <a href="?tab=my" class="{% if tab == 'my' %}active{% endif %}">My Scheduled Events</a>
+  <a href="?tab=registrations" class="{% if tab == 'registrations' %}active{% endif %}">Registrations</a>
+  <a href="?tab=all" class="{% if tab == 'all' %}active{% endif %}">All Events</a>
+</div>
+
+{% if tab == 'my' %}
+  {% if my_events %}
+    <div class="card" style="overflow:hidden">
+      <div style="overflow-x:auto"><table class="data" style="min-width:640px">
+        <thead><tr><th>Event</th><th>Category</th><th>Date</th><th>Registered</th><th style="text-align:right">Actions</th></tr></thead>
+        <tbody>
+          {% for e in my_events %}
+          <tr>
+            <td><a href="{% url 'event_detail' e.pk %}" style="font-weight:600">{{ e.title }}</a><div class="muted" style="font-size:12px">{{ e.department }} · {{ e.venue }}</div></td>
+            <td>{% include 'portal/_cat.html' with category=e.category %}</td>
+            <td class="muted">{{ e.date|date:"M j, Y" }}{% if e.is_past %} <span style="font-size:12px">(past)</span>{% endif %}</td>
+            <td class="muted">{{ e.registered_count }}{% if e.capacity %} / {{ e.capacity }}{% endif %}</td>
+            <td>
+              <div class="flex gap" style="justify-content:flex-end;gap:6px">
+                <a href="{% url 'event_registrants' e.pk %}" class="btn btn-secondary btn-sm" title="Registrants">👥</a>
+                <a href="{% url 'event_edit' e.pk %}" class="btn btn-secondary btn-sm" title="Edit">✏️</a>
+                <form method="post" action="{% url 'event_delete' e.pk %}" onsubmit="return confirm('Delete this event and its registrations?')" style="margin:0">
+                  {% csrf_token %}<button type="submit" class="btn btn-danger btn-sm" title="Delete">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  {% else %}
+    <div class="card empty"><div style="font-size:40px">📅</div><h3 style="margin:0">No events yet</h3><p class="muted" style="margin:0">Create your first event to get started.</p><a href="{% url 'event_create' %}" class="btn btn-primary mt-4">New Event</a></div>
+  {% endif %}
+
+{% elif tab == 'registrations' %}
+  {% if registrations %}
+    <div class="card" style="overflow:hidden"><div style="overflow-x:auto"><table class="data" style="min-width:760px">
+      <thead><tr><th>Student</th><th>College</th><th>Age</th><th>Event</th><th>Category</th><th>Registered</th></tr></thead>
+      <tbody>
+        {% for r in registrations %}
+        <tr>
+          <td><div style="font-weight:600">{{ r.user.name }}</div><div class="muted" style="font-size:12px">{{ r.user.email }}</div></td>
+          <td class="muted">{{ r.user.college|default:"—" }}</td>
+          <td class="muted">{{ r.user.age|default:"—" }}</td>
+          <td><a href="{% url 'event_registrants' r.event.pk %}">{{ r.event.title }}</a><div class="muted" style="font-size:12px">{{ r.event.date|date:"M j, Y" }}</div></td>
+          <td>{% include 'portal/_cat.html' with category=r.event.category %}</td>
+          <td class="muted">{{ r.registered_at|date:"M j, Y · g:i A" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div></div>
+  {% else %}
+    <div class="card empty"><div style="font-size:40px">👥</div><h3 style="margin:0">No registrations yet</h3><p class="muted" style="margin:0">When students register for your events, they'll show up here.</p></div>
+  {% endif %}
+
+{% elif tab == 'all' %}
+  {% if all_events %}
+    <div class="card" style="overflow:hidden"><div style="overflow-x:auto"><table class="data" style="min-width:720px">
+      <thead><tr><th>Event</th><th>Category</th><th>Date</th><th>Scheduled by</th><th>Registered</th></tr></thead>
+      <tbody>
+        {% for e in all_events %}
+        <tr>
+          <td><a href="{% url 'event_detail' e.pk %}" style="font-weight:600">{{ e.title }}</a><div class="muted" style="font-size:12px">{{ e.department }} · {{ e.venue }}</div></td>
+          <td>{% include 'portal/_cat.html' with category=e.category %}</td>
+          <td class="muted">{{ e.date|date:"M j, Y" }}{% if e.is_past %} <span style="font-size:12px">(past)</span>{% endif %}</td>
+          <td class="muted">{% if e.created_by %}{{ e.created_by.name }}{% else %}—{% endif %}{% if e.created_by_id == user.id %} <span class="chip chip-you">You</span>{% endif %}</td>
+          <td class="muted">{{ e.registered_count }}{% if e.capacity %} / {{ e.capacity }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div></div>
+  {% else %}
+    <div class="card empty"><div style="font-size:40px">🗂️</div><h3 style="margin:0">No events yet</h3><p class="muted" style="margin:0">Events scheduled by any admin will appear here.</p></div>
+  {% endif %}
+{% endif %}
+{% endblock %}

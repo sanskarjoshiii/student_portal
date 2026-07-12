@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}My Registrations — EventHub{% endblock %}
+{% block content %}
+<p class="kicker" style="margin-bottom:12px">Your events</p>
+<h1>My Registrations</h1>
+<p class="muted" style="margin:8px 0 32px">Everything you've signed up for, in one place.</p>
+
+{% if registrations %}
+  <div class="flex" style="flex-direction:column;gap:16px">
+    {% for reg in registrations %}
+      <div class="card" style="display:flex;overflow:hidden">
+        <div style="width:6px;background:{{ reg.event.banner_color }}"></div>
+        <div class="flex between items-center" style="flex:1;padding:16px 20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="margin-bottom:6px">{% include 'portal/_cat.html' with category=reg.event.category %}</div>
+            <a href="{% url 'event_detail' reg.event.pk %}" style="font-size:18px;font-weight:700">{{ reg.event.title }}</a>
+            <div class="muted" style="font-size:14px;margin-top:4px">📅 {{ reg.event.date|date:"D, M j, Y" }} · 📍 {{ reg.event.venue }}</div>
+          </div>
+          <form method="post" action="{% url 'cancel_registration' reg.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'my_registrations' %}">
+            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card empty">
+    <div style="font-size:40px">🎟️</div>
+    <h3 style="margin:0">No registrations yet</h3>
+    <p class="muted" style="margin:0">Browse events and register to see them here.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-4">Browse events</a>
+  </div>
+{% endif %}
+{% endblock %}

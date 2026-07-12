@@ -1,0 +1,3 @@
+{% if category == 'Seminar' %}{% with color='#4f7cf5' %}<span class="cat"><span class="cdot" style="background:{{ color }}"></span>{{ category }}</span>{% endwith %}
+{% elif category == 'Workshop' %}<span class="cat"><span class="cdot" style="background:#3fae7d"></span>{{ category }}</span>
+{% else %}<span class="cat"><span class="cdot" style="background:#e8894e"></span>{{ category }}</span>{% endif %}

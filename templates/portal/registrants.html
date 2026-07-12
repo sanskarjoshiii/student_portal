@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Registrants — {{ event.title }}{% endblock %}
+{% block content %}
+<div style="max-width:840px;margin:0 auto">
+  <a href="{% url 'admin_dashboard' %}" class="muted" style="font-size:14px">← Back to dashboard</a>
+
+  <div class="flex between items-center wrap" style="gap:12px;margin:16px 0 24px">
+    <div>
+      <h1 style="font-size:26px">{{ event.title }}</h1>
+      <p class="muted" style="margin-top:4px">👥 {{ event.registered_count }} registrant{{ event.registered_count|pluralize }}{% if event.capacity %} · capacity {{ event.capacity }}{% endif %}</p>
+    </div>
+    {% if registrations %}<a href="{% url 'event_registrants_csv' event.pk %}" class="btn btn-secondary btn-sm">⬇ Export CSV</a>{% endif %}
+  </div>
+
+  {% if registrations %}
+    <div class="card" style="overflow:hidden"><div style="overflow-x:auto"><table class="data" style="min-width:680px">
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>College</th><th>Age</th><th>Registered</th></tr></thead>
+      <tbody>
+        {% for r in registrations %}
+        <tr>
+          <td class="muted">{{ forloop.counter }}</td>
+          <td style="font-weight:600">{{ r.user.name }}</td>
+          <td class="muted">{{ r.user.email }}</td>
+          <td class="muted">{{ r.user.college|default:"—" }}</td>
+          <td class="muted">{{ r.user.age|default:"—" }}</td>
+          <td class="muted">{{ r.registered_at|date:"M j, Y · g:i A" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div></div>
+  {% else %}
+    <div class="card empty"><div style="font-size:40px">👥</div><h3 style="margin:0">No registrants yet</h3><p class="muted" style="margin:0">Registrations will appear here as students sign up.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

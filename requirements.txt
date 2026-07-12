@@ -1,0 +1,7 @@
+asgiref==3.11.1
+certifi==2026.6.17
+Django==5.2.16
+python-dotenv==1.2.2
+sqlparse==0.5.5
+truststore==0.10.4
+tzdata==2026.3

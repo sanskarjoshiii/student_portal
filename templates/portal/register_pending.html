@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Request submitted — EventHub{% endblock %}
+{% block content %}
+<div class="center-narrow">
+  <div class="card pad" style="padding:40px;text-align:center">
+    <div style="font-size:44px">📬</div>
+    <h1 style="font-size:26px;margin-top:12px">Request submitted</h1>
+    <p class="muted" style="margin:12px 0 0">Your admin access request has been sent to the system head ({{ system_head }}) for approval. You'll receive your login password by email once approved (within 5–10 days).</p>
+    <a href="{% url 'login' %}" class="btn btn-primary mt-6">Go to login</a>
+  </div>
+</div>
+{% endblock %}
