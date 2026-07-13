@@ -35,6 +35,11 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*"]  # fine for local development / a submission
 
+# Render sets RENDER_EXTERNAL_HOSTNAME to your app's public hostname.
+# Django needs it in CSRF_TRUSTED_ORIGINS or every form POST returns a 403.
+RENDER_HOST = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+CSRF_TRUSTED_ORIGINS = [f"https://{RENDER_HOST}"] if RENDER_HOST else []
+
 # Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -48,6 +53,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves static files (CSS/admin) in production without a separate server.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -77,13 +84,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Database — SQLite (zero setup, perfect for a beginner project)
+# Database — SQLite locally, Postgres in production.
+# If DATABASE_URL is set (Render), use it; otherwise fall back to SQLite.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+if os.getenv("DATABASE_URL"):
+    import dj_database_url
+    DATABASES["default"] = dj_database_url.config(
+        conn_max_age=600, ssl_require=True
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -105,6 +118,14 @@ USE_TZ = True
 # Static files (CSS)
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Where `collectstatic` gathers files for WhiteNoise to serve in production.
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
